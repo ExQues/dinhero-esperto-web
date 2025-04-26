@@ -1,36 +1,50 @@
+import { useState } from 'react';
+import { Navigate, Routes, Route } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { useTheme, ThemeToggle } from './context/ThemeContext';
+import Index from './pages/Index';
+import NotFound from './pages/NotFound';
+import TransactionsPage from './pages/TransactionsPage';
+import AuthCallback from './pages/AuthCallback';
+import Dashboard from './components/Dashboard';
+import { Toaster } from './components/ui/toaster';
+import './App.css';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
-import Dashboard from "./components/Dashboard";
-import NotFound from "./pages/NotFound";
-import { AuthProvider } from "./context/AuthContext";
-import AuthCallback from "./pages/AuthCallback";
-import TransactionsPage from "./pages/TransactionsPage";
-
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const { isAuthenticated } = useAuth();
+  const { theme } = useTheme();
+  
+  return (
+    <div className={`app ${theme}`}>
+      <div className="theme-toggle-container absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route 
+          path="/dashboard" 
+          element={isAuthenticated ? <Dashboard /> : <Navigate to="/" replace />} 
+        />
+        <Route 
+          path="/transactions" 
+          element={isAuthenticated ? <TransactionsPage /> : <Navigate to="/" replace />} 
+        />
+        {/* Redirecionar rotas não implementadas para o dashboard */}
+        <Route path="/budgets" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/reports" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/planning" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/shared" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/inventory" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/settings" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/pricing" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      
+      <Toaster />
+    </div>
+  );
+}
 
 export default App;

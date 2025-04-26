@@ -1,42 +1,79 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.theme-toggle-container {
+  position: fixed;
+  z-index: 100;
 }
 
-@keyframes logo-spin {
+/* Estilos específicos para o tema claro */
+.light .text-money {
+  color: hsl(var(--money));
+}
+
+/* Estilos específicos para o tema escuro */
+.dark .text-money {
+  color: hsl(var(--money));
+}
+
+/* Ajustes para o sidebar em diferentes tamanhos de tela */
+@media (max-width: 768px) {
+  .ml-\[250px\] {
+    margin-left: 70px;
+  }
+  
+  .w-\[calc\(100\%-250px\)\] {
+    width: calc(100% - 70px);
+  }
+}
+
+/* Animações para transições de página */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Melhorias para acessibilidade */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
 }
 
-.card {
-  padding: 2em;
+/* Estilos para feedback de carregamento */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
 }
 
-.read-the-docs {
-  color: #888;
+.loading-spinner {
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 4px solid hsl(var(--primary));
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
