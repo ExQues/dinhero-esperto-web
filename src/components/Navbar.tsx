@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import AuthModal from './AuthModal';
@@ -11,6 +11,7 @@ const Navbar = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
   
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -24,6 +25,12 @@ const Navbar = () => {
   const openSignupModal = () => {
     setAuthMode('signup');
     setAuthModalOpen(true);
+    closeMenu();
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
     closeMenu();
   };
 
@@ -51,7 +58,7 @@ const Navbar = () => {
               <Link to="/dashboard">
                 <Button variant="outline">Meu Painel</Button>
               </Link>
-              <Button variant="ghost" onClick={logout}>Sair</Button>
+              <Button variant="ghost" onClick={handleLogout}>Sair</Button>
             </div>
           ) : (
             <div className="flex items-center gap-4">
@@ -88,10 +95,7 @@ const Navbar = () => {
                 <Link to="/dashboard" onClick={closeMenu}>
                   <Button className="w-full" variant="outline">Meu Painel</Button>
                 </Link>
-                <Button className="w-full" variant="ghost" onClick={() => {
-                  logout();
-                  closeMenu();
-                }}>Sair</Button>
+                <Button className="w-full" variant="ghost" onClick={handleLogout}>Sair</Button>
               </>
             ) : (
               <>

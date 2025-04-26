@@ -16,7 +16,8 @@ type AuthContextType = {
   isPremium: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, resend?: boolean) => Promise<{success: boolean, message?: string}>;
+  verifyCode: (email: string, code: string) => Promise<{success: boolean, message?: string}>;
   upgradeToPremium: () => Promise<void>;
 };
 
@@ -43,24 +44,95 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (name: string, email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) throw error;
-
-    if (data.user) {
-      // Don't set the user here - wait for email verification
-      toast({
-        title: 'Verifique seu email',
-        description: 'Um link de confirmação foi enviado para seu email.',
+  const signup = async (name: string, email: string, password: string, resend: boolean = false): Promise<{success: boolean, message?: string}> => {
+    try {
+      // If it's a resend, we use a different approach
+      if (resend) {
+        // Generate a random 6-digit code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store the code in user_metadata for verification later
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          data: {
+            verificationCode
+          }
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: 'Código reenviado',
+          description: 'Um novo código de verificação foi enviado para seu email.',
+        });
+        
+        return { success: true };
+      }
+      
+      // Generate a random 6-digit code for new signup
+      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Sign up the user with the verification code stored in metadata
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { 
+            name,
+            verificationCode
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
+
+      if (error) {
+        console.error("Signup error:", error);
+        return { success: false, message: error.message };
+      }
+
+      if (data.user) {
+        toast({
+          title: 'Verifique seu email',
+          description: 'Um código de verificação foi enviado para seu email.',
+        });
+        return { success: true };
+      }
+      
+      return { success: false, message: 'Ocorreu um erro inesperado.' };
+    } catch (error: any) {
+      console.error("Error in signup:", error);
+      return { success: false, message: error.message };
+    }
+  };
+  
+  const verifyCode = async (email: string, code: string): Promise<{success: boolean, message?: string}> => {
+    try {
+      // Query the user by email to check the verification code
+      const { data: { user }, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (userError || !user) {
+        return { success: false, message: 'Usuário não encontrado.' };
+      }
+      
+      const storedCode = user.user_metadata.verificationCode;
+      
+      if (code !== storedCode) {
+        return { success: false, message: 'Código de verificação inválido.' };
+      }
+      
+      // Verify the user's email
+      const { error } = await supabase.auth.updateUser({
+        data: { email_verified: true }
+      });
+      
+      if (error) {
+        return { success: false, message: error.message };
+      }
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error("Error in verification:", error);
+      return { success: false, message: error.message };
     }
   };
 
@@ -80,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth event:", event);
         if (session?.user) {
           setUser({
             id: session.user.id,
@@ -95,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Current session:", session);
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -119,6 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         signup,
+        verifyCode,
         upgradeToPremium,
       }}
     >
