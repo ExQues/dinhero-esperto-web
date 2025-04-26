@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { validatePassword } from '@/utils/passwordValidation';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type AuthModalProps = {
   isOpen: boolean;
@@ -17,18 +19,36 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showVerification, setShowVerification] = useState(false);
   
   const { login, signup } = useAuth();
   const { toast } = useToast();
 
-  const toggleMode = () => {
-    setMode(mode === 'login' ? 'signup' : 'login');
+  const validateForm = () => {
+    if (mode === 'signup') {
+      const { isValid, errors } = validatePassword(password);
+      setPasswordErrors(errors);
+      
+      if (!isValid) return false;
+      
+      if (password !== confirmPassword) {
+        setPasswordErrors(['As senhas não conferem']);
+        return false;
+      }
+    }
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) return;
+    
     setIsLoading(true);
     
     try {
@@ -38,14 +58,15 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           title: 'Login realizado com sucesso!',
           description: 'Bem-vindo de volta ao DinheroEsperto.',
         });
+        onClose();
       } else {
         await signup(name, email, password);
+        setShowVerification(true);
         toast({
-          title: 'Conta criada com sucesso!',
-          description: 'Bem-vindo ao DinheroEsperto.',
+          title: 'Código de verificação enviado!',
+          description: 'Por favor, verifique seu email e insira o código de verificação.',
         });
       }
-      onClose();
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -54,6 +75,15 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    if (mode === 'signup') {
+      const { errors } = validatePassword(newPassword);
+      setPasswordErrors(errors);
     }
   };
 
@@ -71,74 +101,118 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          {mode === 'signup' && (
+        {showVerification ? (
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
+              <Label htmlFor="verificationCode">Código de Verificação</Label>
               <Input 
-                id="name" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Seu nome completo" 
+                id="verificationCode"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                placeholder="Digite o código recebido por email"
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              Verificar Código
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome</Label>
+                <Input 
+                  id="name" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Seu nome completo" 
+                  required 
+                />
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                id="email" 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu.email@exemplo.com" 
                 required 
               />
             </div>
-          )}
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu.email@exemplo.com" 
-              required 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input 
-              id="password" 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="******" 
-              required 
-            />
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Processando...' : mode === 'login' ? 'Entrar' : 'Criar Conta'}
-          </Button>
-          
-          <div className="text-center text-sm">
-            {mode === 'login' ? (
-              <p>
-                Não tem uma conta?{' '}
-                <button
-                  type="button"
-                  className="text-primary hover:underline focus:outline-none"
-                  onClick={toggleMode}
-                >
-                  Criar uma conta
-                </button>
-              </p>
-            ) : (
-              <p>
-                Já tem uma conta?{' '}
-                <button
-                  type="button"
-                  className="text-primary hover:underline focus:outline-none"
-                  onClick={toggleMode}
-                >
-                  Entrar
-                </button>
-              </p>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder="******" 
+                required 
+              />
+            </div>
+
+            {mode === 'signup' && (
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="******" 
+                  required 
+                />
+              </div>
             )}
-          </div>
-        </form>
+            
+            {passwordErrors.length > 0 && (
+              <Alert variant="destructive" className="mt-2">
+                <AlertDescription>
+                  <ul className="list-disc pl-4">
+                    {passwordErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Processando...' : mode === 'login' ? 'Entrar' : 'Criar Conta'}
+            </Button>
+            
+            <div className="text-center text-sm">
+              {mode === 'login' ? (
+                <p>
+                  Não tem uma conta?{' '}
+                  <button
+                    type="button"
+                    className="text-primary hover:underline focus:outline-none"
+                    onClick={() => setMode('signup')}
+                  >
+                    Criar uma conta
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Já tem uma conta?{' '}
+                  <button
+                    type="button"
+                    className="text-primary hover:underline focus:outline-none"
+                    onClick={() => setMode('login')}
+                  >
+                    Entrar
+                  </button>
+                </p>
+              )}
+            </div>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

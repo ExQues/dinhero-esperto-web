@@ -1,5 +1,6 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 type User = {
   id: string;
@@ -13,7 +14,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isPremium: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   upgradeToPremium: () => Promise<void>;
 };
@@ -24,30 +25,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   const login = async (email: string, password: string) => {
-    // Mock login functionality
-    const mockUser = {
-      id: '123',
-      name: email.split('@')[0],
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      isPremium: false,
-    };
-    
-    setUser(mockUser);
+      password,
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        name: data.user.user_metadata.name || email.split('@')[0],
+        email: data.user.email!,
+        isPremium: false,
+      });
+    }
   };
 
   const signup = async (name: string, email: string, password: string) => {
-    // Mock signup functionality
-    const mockUser = {
-      id: '123',
-      name,
+    const { data, error } = await supabase.auth.signUp({
       email,
-      isPremium: false,
-    };
-    
-    setUser(mockUser);
+      password,
+      options: {
+        data: { name },
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      // Don't set the user here - wait for email verification
+      toast({
+        title: 'Verifique seu email',
+        description: 'Um link de confirmação foi enviado para seu email.',
+      });
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     setUser(null);
   };
   
@@ -56,6 +74,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({ ...user, isPremium: true });
     }
   };
+
+  // Listen for authentication state changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            name: session.user.user_metadata.name || session.user.email!.split('@')[0],
+            email: session.user.email!,
+            isPremium: false,
+          });
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // Check current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          name: session.user.user_metadata.name || session.user.email!.split('@')[0],
+          email: session.user.email!,
+          isPremium: false,
+        });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <AuthContext.Provider
