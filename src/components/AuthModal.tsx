@@ -31,6 +31,24 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
   const [emailSent, setEmailSent] = useState(false);
   const [verificationState, setVerificationState] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    // When the modal is opened or the initialMode prop changes,
+    // update the internal mode and reset form states.
+    if (isOpen) { // Only act if the modal is intended to be visible
+      setMode(initialMode);
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setName('');
+      setPasswordErrors([]);
+      setErrorMessage('');
+      setShowVerification(false); // Reset verification flow
+      setVerificationCode('');
+      setEmailSent(false);
+      setVerificationState('idle');
+    }
+  }, [isOpen, initialMode]); // Dependencies: isOpen and initialMode
   
   const { login, signup, verifyCode } = useAuth();
   const { toast } = useToast();
