@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -27,31 +28,31 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
   const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
-  const [emailSent, setEmailSent] = useState(false); // Mantido para lógica de reenvio
+  const [emailSent, setEmailSent] = useState(false);
   const [verificationState, setVerificationState] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
-  
-  const { login, signup, verifyCode } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (isOpen) {
+    // When the modal is opened or the initialMode prop changes,
+    // update the internal mode and reset form states.
+    if (isOpen) { // Only act if the modal is intended to be visible
       setMode(initialMode);
-      // Resetar campos e erros para uma experiência limpa ao reabrir
       setEmail('');
       setPassword('');
       setConfirmPassword('');
       setName('');
       setPasswordErrors([]);
       setErrorMessage('');
-      setShowVerification(false);
-      // setEmailSent(false); // Decidir se deve resetar, pode ser útil manter para UI de reenvio
+      setShowVerification(false); // Reset verification flow
       setVerificationCode('');
+      setEmailSent(false);
       setVerificationState('idle');
-      setIsLoading(false); // Garantir que o loading seja resetado
     }
-  }, [initialMode, isOpen]);
+  }, [isOpen, initialMode]); // Dependencies: isOpen and initialMode
+  
+  const { login, signup, verifyCode } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     if (mode === 'signup') {
@@ -96,15 +97,15 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           });
         } else {
           setErrorMessage(message || 'Ocorreu um erro ao processar sua solicitação.');
-          // throw new Error(message); // Não precisa mais lançar, o toast já é mostrado abaixo
+          throw new Error(message);
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Auth error:', error);
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: error.message || errorMessage || 'Ocorreu um erro ao processar sua solicitação.',
+        description: errorMessage || 'Ocorreu um erro ao processar sua solicitação.',
       });
     } finally {
       setIsLoading(false);
@@ -120,7 +121,6 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
 
     setVerificationState('verifying');
     setErrorMessage('');
-    setIsLoading(true);
 
     try {
       const { success, message } = await verifyCode(email, verificationCode);
@@ -131,11 +131,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           description: 'Sua conta foi ativada. Você pode fazer login agora.',
         });
         setTimeout(() => {
-          onClose(); // Fechar o modal após sucesso
-          // setMode('login'); // Não precisa mais, o modal será fechado
-          // setShowVerification(false);
-          // setVerificationState('idle');
-          // setVerificationCode('');
+          setMode('login');
+          setShowVerification(false);
+          setVerificationState('idle');
+          setVerificationCode('');
         }, 1500);
       } else {
         setVerificationState('error');
@@ -146,16 +145,14 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
           description: message || 'Código de verificação inválido.',
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       setVerificationState('error');
-      setErrorMessage(error.message || 'Ocorreu um erro ao verificar o código.');
+      setErrorMessage('Ocorreu um erro ao verificar o código.');
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: error.message || 'Ocorreu um erro ao verificar o código.',
+        description: 'Ocorreu um erro ao verificar o código.',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -170,30 +167,22 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
 
   const handleResendCode = async () => {
     setIsLoading(true);
-    setErrorMessage('');
     try {
-      // Para reenviar, precisamos garantir que o usuário já tentou o signup uma vez.
-      // A função signup no AuthContext foi ajustada para lidar com o reenvio.
       const { success, message } = await signup(name, email, password, true);
       if (success) {
-        setEmailSent(true); // Manter o estado para UI
+        setEmailSent(true);
         toast({
           title: 'Código reenviado!',
           description: 'Um novo código de verificação foi enviado para o seu email.',
         });
       } else {
         setErrorMessage(message || 'Erro ao reenviar o código de verificação.');
-        toast({
-          variant: 'destructive',
-          title: 'Erro',
-          description: message || 'Erro ao reenviar o código de verificação.',
-        });
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         variant: 'destructive',
         title: 'Erro',
-        description: error.message || 'Ocorreu um erro ao reenviar o código de verificação.',
+        description: 'Ocorreu um erro ao reenviar o código de verificação.',
       });
     } finally {
       setIsLoading(false);
@@ -255,9 +244,9 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={verificationCode.length !== 6 || verificationState === 'verifying' || verificationState === 'success' || isLoading}
+                disabled={verificationCode.length !== 6 || verificationState === 'verifying' || verificationState === 'success'}
               >
-                {isLoading && verificationState === 'verifying' ? (
+                {verificationState === 'verifying' ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verificando
                   </>
@@ -289,12 +278,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
                   type="button"
                   className="text-primary hover:underline focus:outline-none"
                   onClick={() => {
-                    // Ao voltar para login, resetar estados específicos da verificação
-                    setShowVerification(false);
-                    setVerificationCode('');
-                    setVerificationState('idle');
-                    setErrorMessage('');
                     setMode('login');
+                    setShowVerification(false);
                   }}
                 >
                   Voltar para login
@@ -414,4 +399,3 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) =
 };
 
 export default AuthModal;
-
