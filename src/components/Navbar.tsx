@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAuth } from '@/context/AuthContext';
+import { ThemeToggleButton } from "@/components/ThemeToggleButton"; // Import the theme toggle button
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -35,7 +35,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="bg-background shadow-sm sticky top-0 z-50 text-foreground">
       <div className="container mx-auto py-4 px-6 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-bold text-2xl bg-clip-text text-transparent hero-gradient">DinheroEsperto</span>
@@ -43,13 +43,13 @@ const Navbar = () => {
         
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
-          <Link to="/#features" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/#features" className="hover:text-primary transition-colors">
             Funcionalidades
           </Link>
-          <Link to="/#pricing" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/#pricing" className="hover:text-primary transition-colors">
             Planos
           </Link>
-          <Link to="/#testimonials" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/#testimonials" className="hover:text-primary transition-colors">
             Depoimentos
           </Link>
           
@@ -66,10 +66,12 @@ const Navbar = () => {
               <Button onClick={openSignupModal}>Começar Grátis</Button>
             </div>
           )}
+          <ThemeToggleButton /> {/* Add theme toggle button to desktop menu */}
         </div>
         
         {/* Mobile Menu Button */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-2">
+          <ThemeToggleButton /> {/* Add theme toggle button to mobile menu controls */}
           <Button variant="ghost" size="icon" onClick={toggleMenu}>
             {isMenuOpen ? <X /> : <Menu />}
           </Button>
@@ -78,15 +80,15 @@ const Navbar = () => {
       
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t py-4">
+        <div className="md:hidden bg-background border-t py-4">
           <div className="container mx-auto px-6 flex flex-col gap-4">
-            <Link to="/#features" className="py-2 text-gray-600" onClick={closeMenu}>
+            <Link to="/#features" className="py-2" onClick={closeMenu}>
               Funcionalidades
             </Link>
-            <Link to="/#pricing" className="py-2 text-gray-600" onClick={closeMenu}>
+            <Link to="/#pricing" className="py-2" onClick={closeMenu}>
               Planos
             </Link>
-            <Link to="/#testimonials" className="py-2 text-gray-600" onClick={closeMenu}>
+            <Link to="/#testimonials" className="py-2" onClick={closeMenu}>
               Depoimentos
             </Link>
             
@@ -121,3 +123,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
