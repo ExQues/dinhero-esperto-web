@@ -1,63 +1,74 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext'; // Importação não utilizada, pode ser removida futuramente se não houver planos de uso.
+import { Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-
-type Theme = "light" | "dark";
-
-type ThemeProviderProps = {
-  children: ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
-};
-
-type ThemeProviderState = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-const initialState: ThemeProviderState = {
-  theme: "dark", // Default to dark theme
-  setTheme: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
-
-export function ThemeProvider({ 
-  children, 
-  defaultTheme = "dark", // Default to dark theme
-  storageKey = "vite-ui-theme-v3", // Changed storageKey to reset existing preferences
-  ...props 
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Always start with dark theme for a black and white experience
-    const storedTheme = localStorage.getItem(storageKey) as Theme | null;
-    return storedTheme || defaultTheme;
-  });
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem(storageKey, theme);
-  }, [theme, storageKey]);
-
-  const value = {
-    theme,
-    setTheme: (newTheme: Theme) => {
-      setTheme(newTheme);
-    },
-  };
-
-  return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {children}
-    </ThemeProviderContext.Provider>
-  );
+// Definição do contexto de tema
+interface ThemeContextType {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
 }
 
+// Criação do contexto
+import { createContext, useContext } from 'react';
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+// Hook personalizado para usar o tema
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
+  const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
 };
+
+// Provedor de tema
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    // Verificar localStorage primeiro
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    // Se houver tema salvo, usa ele. Caso contrário, o padrão é 'dark'.
+    return savedTheme || 'dark'; 
+  });
+
+  // Efeito para aplicar a classe ao elemento html e salvar no localStorage
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Função para alternar o tema
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+// Componente de botão para alternar tema
+export const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      aria-label={`Alternar para tema ${theme === 'light' ? 'escuro' : 'claro'}`}
+    >
+      {theme === 'light' ? (
+        <Moon className="h-5 w-5" />
+      ) : (
+        <Sun className="h-5 w-5" />
+      )}
+    </Button>
+  );
+};
+
