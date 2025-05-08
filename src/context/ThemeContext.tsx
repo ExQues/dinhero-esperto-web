@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 type Theme = "light" | "dark";
@@ -14,7 +15,7 @@ type ThemeProviderState = {
 };
 
 const initialState: ThemeProviderState = {
-  theme: "dark", // Default to dark theme as requested
+  theme: "dark", // Default to dark theme
   setTheme: () => null,
 };
 
@@ -23,10 +24,11 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({ 
   children, 
   defaultTheme = "dark", // Default to dark theme
-  storageKey = "vite-ui-theme-v2", // Changed storageKey to reset existing preferences
+  storageKey = "vite-ui-theme-v3", // Changed storageKey to reset existing preferences
   ...props 
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
+    // Always start with dark theme for a black and white experience
     const storedTheme = localStorage.getItem(storageKey) as Theme | null;
     return storedTheme || defaultTheme;
   });
@@ -59,4 +61,3 @@ export const useTheme = () => {
   }
   return context;
 };
-

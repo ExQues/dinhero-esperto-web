@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,16 +8,24 @@ import Index from "./pages/Index";
 import Dashboard from "./components/Dashboard";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext"; // Import ThemeProvider
+import { ThemeProvider } from "./context/ThemeContext";
 import AuthCallback from "./pages/AuthCallback";
 import TransactionsPage from "./pages/TransactionsPage";
 
-const queryClient = new QueryClient();
+// Create a new query client with simplified error config for black and white theme
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme"> {/* Wrap AuthProvider and others with ThemeProvider */}
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme-bw">
         <AuthProvider>
           <Toaster />
           <Sonner />
@@ -36,4 +45,3 @@ const App = () => (
 );
 
 export default App;
-
