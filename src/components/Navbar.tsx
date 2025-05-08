@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useAuth } from '@/context/AuthContext';
-import { ThemeToggleButton } from "@/components/ThemeToggleButton"; // Import the theme toggle button
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +13,7 @@ const Navbar = () => {
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -34,6 +36,8 @@ const Navbar = () => {
     closeMenu();
   };
 
+  const isDashboard = location.pathname === '/dashboard';
+
   return (
     <nav className="bg-background shadow-sm sticky top-0 z-50 text-foreground">
       <div className="container mx-auto py-4 px-6 flex justify-between items-center">
@@ -55,9 +59,15 @@ const Navbar = () => {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-4">
-              <Link to="/dashboard">
-                <Button variant="outline">Meu Painel</Button>
-              </Link>
+              {isDashboard ? (
+                <Link to="/">
+                  <Button variant="outline">Página Inicial</Button>
+                </Link>
+              ) : (
+                <Link to="/dashboard">
+                  <Button variant="outline">Meu Painel</Button>
+                </Link>
+              )}
               <Button variant="ghost" onClick={handleLogout}>Sair</Button>
             </div>
           ) : (
@@ -66,12 +76,12 @@ const Navbar = () => {
               <Button onClick={openSignupModal}>Começar Grátis</Button>
             </div>
           )}
-          <ThemeToggleButton /> {/* Add theme toggle button to desktop menu */}
+          <ThemeToggleButton />
         </div>
         
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-2">
-          <ThemeToggleButton /> {/* Add theme toggle button to mobile menu controls */}
+          <ThemeToggleButton />
           <Button variant="ghost" size="icon" onClick={toggleMenu}>
             {isMenuOpen ? <X /> : <Menu />}
           </Button>
@@ -94,9 +104,15 @@ const Navbar = () => {
             
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard" onClick={closeMenu}>
-                  <Button className="w-full" variant="outline">Meu Painel</Button>
-                </Link>
+                {isDashboard ? (
+                  <Link to="/" onClick={closeMenu}>
+                    <Button className="w-full" variant="outline">Página Inicial</Button>
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" onClick={closeMenu}>
+                    <Button className="w-full" variant="outline">Meu Painel</Button>
+                  </Link>
+                )}
                 <Button className="w-full" variant="ghost" onClick={handleLogout}>Sair</Button>
               </>
             ) : (
@@ -123,4 +139,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

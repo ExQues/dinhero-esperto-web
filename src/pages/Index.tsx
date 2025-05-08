@@ -6,16 +6,10 @@ import Pricing from '@/components/Pricing';
 import Testimonials from '@/components/Testimonials';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/context/AuthContext';
-import { Navigate } from 'react-router-dom';
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
-
-  // Redirect to dashboard if already authenticated
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
