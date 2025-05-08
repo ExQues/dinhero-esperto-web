@@ -32,24 +32,24 @@ const Dashboard = () => {
   ];
   
   const upcomingTransactions = [
-    { id: 1, name: 'Aluguel', amount: -800, date: '2025-05-05', category: 'Moradia' },
-    { id: 2, name: 'Salário', amount: 3500, date: '2025-05-10', category: 'Receita' },
-    { id: 3, name: 'Internet', amount: -100, date: '2025-05-15', category: 'Utilidades' },
-    { id: 4, name: 'Assinatura Netflix', amount: -45, date: '2025-05-20', category: 'Entretenimento' },
+    { id: 1, name: 'Aluguel', amount: -800, date: '2025-05-10', category: 'Moradia' },
+    { id: 2, name: 'Salário', amount: 3500, date: '2025-05-15', category: 'Receita' },
+    { id: 3, name: 'Internet', amount: -100, date: '2025-05-20', category: 'Utilidades' },
+    { id: 4, name: 'Assinatura Netflix', amount: -45, date: '2025-05-25', category: 'Entretenimento' },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen dark flex">
       <Sidebar />
       
-      <div className="ml-[250px] w-[calc(100%-250px)] p-6">
+      <div className="ml-[250px] w-[calc(100%-250px)] p-6 bg-background">
         <header className="mb-8">
           <h1 className="text-3xl font-bold">Bem-vindo de volta, {user?.name}!</h1>
           <p className="text-gray-600">Aqui está um resumo das suas finanças</p>
         </header>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Saldo Total</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -60,7 +60,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Receitas</CardTitle>
               <BarChart className="h-4 w-4 text-muted-foreground" />
@@ -71,7 +71,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Despesas</CardTitle>
               <PieChart className="h-4 w-4 text-muted-foreground" />
@@ -82,7 +82,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Economia</CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -95,7 +95,7 @@ const Dashboard = () => {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader>
               <CardTitle>Distribuição de Despesas</CardTitle>
               <CardDescription>Como você tem gasto seu dinheiro este mês</CardDescription>
@@ -110,7 +110,7 @@ const Dashboard = () => {
                         <span className="text-sm font-medium">{category.name}</span>
                         <span className="text-sm text-gray-500">R$ {category.amount.toFixed(2)}</span>
                       </div>
-                      <div className="w-full h-2 bg-gray-100 rounded-full mt-1">
+                      <div className="w-full h-2 bg-gray-800 rounded-full mt-1">
                         <div
                           className={`h-full rounded-full ${category.color}`}
                           style={{ width: `${category.percentage}%` }}
@@ -123,11 +123,11 @@ const Dashboard = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full">Ver Detalhes</Button>
+              <Button variant="outline" className="w-full bg-blue-900 hover:bg-blue-800 text-white border-blue-700">Ver Detalhes</Button>
             </CardFooter>
           </Card>
           
-          <Card>
+          <Card className="dashboard-card">
             <CardHeader>
               <CardTitle>Próximas Transações</CardTitle>
               <CardDescription>Transações agendadas para os próximos dias</CardDescription>
@@ -135,7 +135,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {upcomingTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex justify-between items-center p-2 hover:bg-gray-50 rounded-md">
+                  <div key={transaction.id} className="flex justify-between items-center p-2 hover:bg-blue-900/30 rounded-md">
                     <div>
                       <p className="font-medium">{transaction.name}</p>
                       <p className="text-xs text-gray-500">{transaction.date} • {transaction.category}</p>
@@ -148,27 +148,27 @@ const Dashboard = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" className="w-full">Ver Todas Transações</Button>
+              <Button variant="outline" className="w-full bg-blue-900 hover:bg-blue-800 text-white border-blue-700">Ver Todas Transações</Button>
             </CardFooter>
           </Card>
         </div>
         
         {isPremium && (
-          <Card className="mt-6 bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200">
+          <Card className="mt-6 bg-blue-900/50 border-blue-700">
             <CardHeader>
               <CardTitle>Recursos Premium Ativados</CardTitle>
               <CardDescription>Você tem acesso a todos os recursos avançados</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-md shadow-sm">
+              <div className="bg-blue-950 p-4 rounded-md shadow-sm border border-blue-800">
                 <h3 className="font-medium mb-2">Gestão de Estoque</h3>
-                <p className="text-sm text-gray-600">Controle seu inventário e monitore vendas em tempo real.</p>
-                <Button variant="outline" size="sm" className="mt-4">Acessar Estoque</Button>
+                <p className="text-sm text-gray-400">Controle seu inventário e monitore vendas em tempo real.</p>
+                <Button variant="outline" size="sm" className="mt-4 bg-blue-800 hover:bg-blue-700 text-white border-blue-700">Acessar Estoque</Button>
               </div>
-              <div className="bg-white p-4 rounded-md shadow-sm">
+              <div className="bg-blue-950 p-4 rounded-md shadow-sm border border-blue-800">
                 <h3 className="font-medium mb-2">Relatórios Avançados</h3>
-                <p className="text-sm text-gray-600">Análises detalhadas e exportação de dados para seu negócio.</p>
-                <Button variant="outline" size="sm" className="mt-4">Ver Relatórios</Button>
+                <p className="text-sm text-gray-400">Análises detalhadas e exportação de dados para seu negócio.</p>
+                <Button variant="outline" size="sm" className="mt-4 bg-blue-800 hover:bg-blue-700 text-white border-blue-700">Ver Relatórios</Button>
               </div>
             </CardContent>
           </Card>

@@ -63,16 +63,16 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Replace colorful money/finance with grayscale versions
+				// Tons de azul em vez de preto e branco
 				money: {
-					DEFAULT: '#333333', // Dark gray instead of emerald
-					light: '#F5F5F5', // Light gray instead of emerald-100
-					dark: '#111111', // Very dark gray instead of emerald-600
+					DEFAULT: '#0369A1', // Azul escuro (sky-700)
+					light: '#BAE6FD', // Azul claro (sky-200)
+					dark: '#075985', // Azul muito escuro (sky-800)
 				},
 				finance: {
-					DEFAULT: '#555555', // Medium gray instead of sky-700
-					light: '#EEEEEE', // Off-white instead of sky-200 
-					dark: '#222222', // Dark gray instead of sky-800
+					DEFAULT: '#2563EB', // Azul médio (blue-600)
+					light: '#DBEAFE', // Azul muito claro (blue-100) 
+					dark: '#1E40AF', // Azul escuro (blue-800)
 				}
 			},
 			borderRadius: {

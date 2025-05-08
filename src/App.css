@@ -13,10 +13,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em rgba(128, 128, 128, 0.5));
+  filter: drop-shadow(0 0 2em rgba(59, 130, 246, 0.5));
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em rgba(192, 192, 192, 0.5));
+  filter: drop-shadow(0 0 2em rgba(59, 130, 246, 0.5));
 }
 
 @keyframes logo-spin {
@@ -39,82 +39,112 @@
 }
 
 .read-the-docs {
-  color: #888;
+  color: #93c5fd;
 }
 
-/* Black and white theme adjustments */
+/* Tema azul escuro */
 .text-money {
-  color: #f8f8f8 !important;
+  color: #3b82f6 !important;
 }
 
 .dark .text-money {
-  color: #ffffff !important;
+  color: #60a5fa !important;
 }
 
 .bg-money {
-  background-color: #333333 !important;
+  background-color: #1d4ed8 !important;
 }
 
 .text-red-500 {
-  color: #dddddd !important;
+  color: #f43f5e !important;
 }
 
 .text-blue-500 {
-  color: #ffffff !important;
+  color: #3b82f6 !important;
 }
 
 .dark {
   --tw-bg-opacity: 1;
-  background-color: rgb(0 0 0 / var(--tw-bg-opacity));
-  color: #ffffff;
+  background-color: rgb(15 23 42 / var(--tw-bg-opacity));
+  color: #f8fafc;
 }
 
 .bg-finance {
-  background-color: #555555 !important;
+  background-color: #1e40af !important;
 }
 
 .bg-amber-500 {
-  background-color: #777777 !important;
+  background-color: #2563eb !important;
 }
 
 .bg-purple-500 {
-  background-color: #999999 !important;
+  background-color: #4f46e5 !important;
 }
 
 .bg-gray-500 {
-  background-color: #aaaaaa !important;
+  background-color: #475569 !important;
 }
 
 .dark .bg-gray-50 {
-  background-color: rgb(10 10 10) !important;
+  background-color: rgb(15 23 42) !important;
 }
 
-/* Fix for dashboard colors */
+/* Cores do dashboard */
 .dashboard-card {
-  background-color: rgb(15 15 15) !important;
-  border-color: rgb(40 40 40) !important;
+  background-color: rgb(30 41 59) !important;
+  border-color: rgb(51 65 85) !important;
 }
 
 .text-gray-600 {
-  color: rgb(180 180 180) !important;
+  color: rgb(148 163 184) !important;
 }
 
-/* Remove background gradients */
+/* Remover gradientes de fundo e usar azuis */
 .bg-gradient-to-r, .hero-gradient, .bg-gradient-to-br {
   background: none !important;
-  background-color: #111 !important;
+  background-color: #1e40af !important;
 }
 
 .dark .bg-gradient-to-r, .dark .hero-gradient, .dark .bg-gradient-to-br {
   background: none !important;
-  background-color: #000 !important;
+  background-color: #0f172a !important;
 }
 
 .dark .text-transparent {
-  color: #fff !important;
+  color: #f8fafc !important;
 }
 
 .min-h-screen {
   min-height: 100vh !important;
-  background-color: #000 !important;
+  background-color: #0f172a !important;
+}
+
+/* Adicionar background azul escuro para o Dashboard */
+.bg-gray-50 {
+  background-color: #0f172a !important;
+}
+
+/* Ajustar cards para tema azul */
+.card {
+  background-color: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+}
+
+/* Ajustar textos para melhor visibilidade */
+.text-gray-500 {
+  color: #94a3b8 !important;
+}
+
+/* Ajustar cores para melhor visibilidade */
+.bg-gray-100 {
+  background-color: #1e3a8a !important;
+}
+
+/* Botões com tema azul */
+.bg-blue-500, .bg-blue-600 {
+  background-color: #3b82f6 !important;
+}
+
+.hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover {
+  background-color: #2563eb !important;
 }
