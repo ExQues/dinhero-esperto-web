@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,9 +11,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import AuthCallback from "./pages/AuthCallback";
 import TransactionsPage from "./pages/TransactionsPage";
 import { ThemeToggleButton } from "./components/ThemeToggleButton";
-import { useEffect } from "react";
 
-// Create a new query client with simplified error config for theme
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -25,11 +22,6 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  // Forçar tema escuro no carregamento da página
-  useEffect(() => {
-    document.documentElement.classList.add('dark');
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
