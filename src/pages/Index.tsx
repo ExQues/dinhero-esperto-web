@@ -8,9 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
-
+  
   return (
-    <div className="min-h-screen flex flex-col bg-white text-black dark:bg-black dark:text-white">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
         <Hero />
