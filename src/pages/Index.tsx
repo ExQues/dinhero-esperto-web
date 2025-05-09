@@ -1,4 +1,3 @@
-
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
@@ -9,9 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 
 const Index = () => {
   const { isAuthenticated } = useAuth();
-  
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-white text-black dark:bg-black dark:text-white">
       <Navbar />
       <main className="flex-grow">
         <Hero />
