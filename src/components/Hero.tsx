@@ -6,88 +6,91 @@ const Hero = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-finance-light to-money-light dark:from-blue-900 dark:to-blue-800">
-      <div className="container mx-auto section-padding">
-        <div className="flex flex-col lg:flex-row lg:items-center">
-          <div className="w-full lg:w-1/2 mb-10 lg:mb-0 text-center lg:text-left">
-            <h1 className="heading-xl mb-6 text-gray-900 dark:text-white">
-              Controle financeiro <span className="text-transparent bg-clip-text hero-gradient">simples e eficaz</span> para todos
+    <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 md:py-24 lg:py-32">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-12 lg:gap-16">
+          {/* Conteúdo de Texto */}
+          <div className="w-full lg:w-1/2 text-center lg:text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
+              Controle financeiro <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">simples e eficaz</span> para todos
             </h1>
-            <p className="text-lg mb-8 text-gray-700 dark:text-gray-300 max-w-lg mx-auto lg:mx-0">
+            <p className="text-lg sm:text-xl text-slate-300 mb-10 max-w-xl mx-auto lg:mx-0">
               Organize suas finanças, economize mais e alcance seus objetivos financeiros com nossa plataforma completa de gerenciamento de dinheiro.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="hero-gradient" onClick={() => setIsAuthModalOpen(true)} aria-label="Começar Gratuitamente">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold shadow-lg transform hover:scale-105 transition-transform duration-200" 
+                onClick={() => setIsAuthModalOpen(true)} 
+                aria-label="Começar Gratuitamente"
+              >
                 Começar Gratuitamente
               </Button>
-              <Button size="lg" variant="outline" className="dark:text-white dark:border-gray-400 dark:hover:bg-gray-700" aria-label="Ver demonstração">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-slate-400 text-slate-200 hover:bg-slate-700 hover:border-slate-500 transition-colors duration-200 font-semibold"
+                aria-label="Ver demonstração"
+              >
                 Ver demonstração
               </Button>
             </div>
-            <div className="mt-8 flex items-center gap-4 justify-center lg:justify-start">
-              <div className="flex -space-x-2">
+            <div className="flex items-center gap-3 justify-center lg:justify-start text-sm text-slate-400">
+              <div className="flex -space-x-2 overflow-hidden">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-gray-500" />
+                  <img 
+                    key={i} 
+                    className="inline-block h-8 w-8 rounded-full ring-2 ring-slate-700"
+                    src={`https://i.pravatar.cc/40?img=${i+10}`} // Avatares de placeholder
+                    alt={`Usuário ${i}`}
+                  />
                 ))}
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Junte-se a <span className="font-medium text-gray-900 dark:text-white">+5.000</span> pessoas que já controlam suas finanças
+              <p>
+                Junte-se a <span className="font-bold text-slate-200">+5.000</span> pessoas que já controlam suas finanças
               </p>
             </div>
           </div>
           
-          <div className="w-full lg:w-1/2 relative mt-12 lg:mt-0">
-            <div className="relative bg-white dark:bg-slate-800 shadow-xl rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700 animate-float">
-              <div className="p-4 bg-finance dark:bg-blue-700 border-b border-gray-100 dark:border-slate-600">
-                <h3 className="text-white font-medium">Visão Geral das Finanças</h3>
+          {/* Imagem/Card de Exemplo */}
+          <div className="w-full lg:w-1/2 relative mt-10 lg:mt-0">
+            <div className="relative bg-slate-800 shadow-2xl rounded-xl overflow-hidden border border-slate-700 transform transition-all duration-500 hover:scale-105 animate-float-slow">
+              <div className="p-5 bg-gradient-to-r from-sky-600 to-blue-700 border-b border-slate-600">
+                <h3 className="text-white font-semibold text-lg">Visão Geral das Finanças</h3>
               </div>
-              <div className="p-4 space-y-4">
-                <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-lg">
-                  <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Saldo Total</h4>
-                  <p className="text-2xl font-bold text-money dark:text-sky-400">R$ 5.840,00</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Atualizado hoje</p>
+              <div className="p-5 space-y-5">
+                <div className="bg-slate-700 p-4 rounded-lg shadow-md">
+                  <h4 className="font-semibold text-slate-100 mb-1">Saldo Total</h4>
+                  <p className="text-3xl font-bold text-sky-400">R$ 5.840,00</p>
+                  <p className="text-xs text-slate-400 mt-1">Atualizado hoje</p>
                 </div>
                 
                 <div className="flex gap-4">
-                  <div className="flex-1 bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Receitas</p>
-                    <p className="text-lg font-bold text-money dark:text-sky-400">R$ 3.500</p>
+                  <div className="flex-1 bg-slate-700 p-4 rounded-lg shadow-md">
+                    <p className="text-sm text-slate-300 mb-1">Receitas</p>
+                    <p className="text-xl font-bold text-green-400">R$ 3.500</p>
                   </div>
-                  <div className="flex-1 bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Despesas</p>
-                    <p className="text-lg font-bold text-red-500 dark:text-red-400">R$ 1.250</p>
+                  <div className="flex-1 bg-slate-700 p-4 rounded-lg shadow-md">
+                    <p className="text-sm text-slate-300 mb-1">Despesas</p>
+                    <p className="text-xl font-bold text-red-400">R$ 1.250</p>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-700 dark:text-gray-200">Categorias principais</h4>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm dark:text-gray-300">Moradia</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                        <div className="w-3/5 h-full bg-money dark:bg-sky-500"></div>
+                <div className="space-y-3">
+                  <h4 className="font-medium text-slate-200">Categorias principais</h4>
+                  {[ { name: "Moradia", percent: 30, color: "bg-sky-500" }, 
+                    { name: "Alimentação", percent: 20, color: "bg-blue-500" }, 
+                    { name: "Transporte", percent: 15, color: "bg-amber-500" }].map(cat => (
+                    <div key={cat.name} className="flex justify-between items-center text-sm">
+                      <span className="text-slate-300">{cat.name}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2.5 bg-slate-600 rounded-full overflow-hidden">
+                          <div className={`h-full ${cat.color}`} style={{ width: `${cat.percent}%` }}></div>
+                        </div>
+                        <span className="text-xs text-slate-400 w-8 text-right">{cat.percent}%</span>
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">30%</span>
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm dark:text-gray-300">Alimentação</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                        <div className="w-2/5 h-full bg-finance dark:bg-blue-500"></div>
-                      </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">20%</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm dark:text-gray-300">Transporte</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-gray-200 dark:bg-slate-600 rounded-full overflow-hidden">
-                        <div className="w-1/4 h-full bg-amber-500 dark:bg-amber-400"></div>
-                      </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">15%</span>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
