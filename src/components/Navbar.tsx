@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -41,7 +40,7 @@ const Navbar = () => {
   return (
     <nav className="bg-background shadow-sm sticky top-0 z-50 text-foreground">
       <div className="container mx-auto py-4 px-6 flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2" aria-label="Página Inicial Dinhero Esperto">
           <span className="font-bold text-2xl bg-clip-text text-transparent hero-gradient">DinheroEsperto</span>
         </Link>
         
@@ -82,7 +81,7 @@ const Navbar = () => {
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-2">
           <ThemeToggleButton />
-          <Button variant="ghost" size="icon" onClick={toggleMenu}>
+          <Button variant="ghost" size="icon" onClick={toggleMenu} aria-label={isMenuOpen ? "Fechar menu" : "Abrir menu"}>
             {isMenuOpen ? <X /> : <Menu />}
           </Button>
         </div>
@@ -139,3 +138,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
