@@ -11,11 +11,13 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  isSystemDark: boolean; // Adicionado para rastrear preferência do sistema
 };
 
 const initialState: ThemeProviderState = {
-  theme: "dark",
+  theme: "dark", 
   setTheme: () => null,
+  isSystemDark: false, // Inicializado como falso
 };
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
@@ -23,41 +25,58 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 export function ThemeProvider({ 
   children, 
   defaultTheme = "dark", 
-  storageKey = "dinhero-esperto-theme", // Chave de armazenamento unificada e semântica
+  storageKey = "dinhero-esperto-theme",
   ...props 
 }: ThemeProviderProps) {
+  const [isSystemDark, setIsSystemDark] = useState(false);
+
+  useEffect(() => {
+    // Verifica a preferência do sistema apenas no cliente
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      setIsSystemDark(mediaQuery.matches);
+      // Opcional: ouvir mudanças na preferência do sistema
+      // mediaQuery.addEventListener('change', (e) => setIsSystemDark(e.matches));
+      // return () => mediaQuery.removeEventListener('change', (e) => setIsSystemDark(e.matches));
+    }
+  }, []);
+
   const [theme, setTheme] = useState<Theme>(() => {
-    // Força o tema para 'dark' na primeira carga se nenhuma preferência válida for encontrada ou para garantir o padrão.
-    // No entanto, para garantir que o padrão seja SEMPRE escuro na primeira visita após esta atualização,
-    // e permitir que o usuário altere depois, vamos inicializar diretamente com 'dark'.
-    // A lógica anterior de ler do localStorage na inicialização do estado foi removida para forçar 'dark'.
-    return defaultTheme; // defaultTheme aqui será 'dark' conforme App.tsx ou o próprio valor padrão.
+    try {
+      if (typeof window !== 'undefined') {
+        const storedTheme = window.localStorage.getItem(storageKey) as Theme | null;
+        if (storedTheme) {
+          return storedTheme;
+        }
+        // Se não houver tema armazenado, usa defaultTheme. 
+        // A classe no HTML será aplicada no useEffect abaixo.
+        return defaultTheme;
+      }
+      return defaultTheme; // Fallback para SSR ou ambientes sem window
+    } catch (e) {
+      return defaultTheme;
+    }
   });
 
   useEffect(() => {
-    // Garante que o tema seja 'dark' na montagem inicial se o estado for 'dark'.
-    // Isso é um pouco redundante com o useState inicializando para 'dark',
-    // mas reforça a intenção e lida com a atualização do localStorage.
-    if (theme === "dark") {
+    if (typeof window !== 'undefined') {
       const root = window.document.documentElement;
-      root.classList.remove("light");
-      root.classList.add("dark");
-      localStorage.setItem(storageKey, "dark");
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
+      try {
+        localStorage.setItem(storageKey, theme);
+      } catch (e) {
+        console.error("Failed to set theme in localStorage", e);
+      }
     }
-  }, [storageKey]); // Executa apenas uma vez na montagem para definir o padrão inicial escuro, se necessário.
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-    root.classList.add(theme);
-    localStorage.setItem(storageKey, theme);
-  }, [theme, storageKey]); // Este useEffect reage às MUDANÇAS de tema pelo usuário.
+  }, [theme, storageKey]);
 
   const value = {
     theme,
     setTheme: (newTheme: Theme) => {
       setTheme(newTheme);
     },
+    isSystemDark, // Expor a preferência do sistema
   };
 
   return (

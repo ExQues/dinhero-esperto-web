@@ -6,109 +6,114 @@
 @layer base {
   :root {
     /* Light mode (azul claro) */
-    --background: 214 100% 97%;
-    --foreground: 222 47% 11%;
+    --background: 214 100% 97%; /* hsl(214, 100%, 97%) - Azul muito claro, quase branco */
+    --foreground: 222 47% 11%; /* hsl(222, 47%, 11%) - Azul bem escuro para texto */
 
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* hsl(0, 0%, 100%) - Branco */
     --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 221 83% 53%; /* hsl(221, 83%, 53%) - Azul primário */
+    --primary-foreground: 210 40% 98%; /* hsl(210, 40%, 98%) - Quase branco para texto sobre primário */
 
-    --secondary: 214 32% 91%;
+    --secondary: 214 32% 91%; /* hsl(214, 32%, 91%) - Azul acinzentado claro */
     --secondary-foreground: 222 47% 11%;
 
     --muted: 214 32% 91%;
-    --muted-foreground: 215 16% 47%;
+    --muted-foreground: 215 16% 47%; /* hsl(215, 16%, 47%) - Cinza azulado para texto suave */
 
     --accent: 214 32% 91%;
     --accent-foreground: 222 47% 11%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 84% 60%; /* hsl(0, 84%, 60%) - Vermelho para ações destrutivas */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 84% 5%;
+    --border: 214 32% 88%; /* hsl(214, 32%, 88%) - Um pouco mais escuro para bordas no modo claro */
+    --input: 214 32% 91%; 
+    --ring: 221 83% 53%; /* Azul primário para anel de foco */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 47% 11%;
+    /* Variáveis específicas do Sidebar para modo claro */
+    --sidebar-background: 222 47% 11%; /* Azul escuro, pode ser ajustado para um tom mais claro se preferir sidebar clara no modo claro */
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 213 94% 68%;
+    --sidebar-primary: 213 94% 68%; /* Amarelo/Laranja para destaque no sidebar escuro */
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 213 94% 68%; 
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 18%;
-    --sidebar-ring: 212 27% 84%;
+    --sidebar-ring: 213 27% 84%;
   }
 
   .dark {
     /* Dark mode (azul escuro) */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 222 47% 11%; /* hsl(222, 47%, 11%) - Azul bem escuro */
+    --foreground: 210 40% 98%; /* hsl(210, 40%, 98%) - Quase branco para texto */
 
-    --card: 223 47% 11%;
+    --card: 223 37% 15%; /* hsl(223, 37%, 15%) - Um pouco mais claro que o fundo para cards */
     --card-foreground: 210 40% 98%;
 
     --popover: 223 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 213 94% 68%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 213 94% 68%; /* hsl(213, 94%, 68%) - Azul claro para destaque */
+    --primary-foreground: 222 47% 11%; /* Azul escuro para texto sobre primário claro */
 
-    --secondary: 217 33% 18%;
+    --secondary: 217 33% 18%; /* hsl(217, 33%, 18%) - Azul escuro acinzentado */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
+    --muted-foreground: 215 20% 65%; /* hsl(215, 20%, 65%) - Cinza claro para texto suave */
 
     --accent: 217 33% 18%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 31%; /* hsl(0, 63%, 31%) - Vermelho escuro */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 18%;
+    --border: 217 33% 25%; /* hsl(217, 33%, 25%) - Borda um pouco mais clara no modo escuro */
     --input: 217 33% 18%;
-    --ring: 213 27% 84%;
-
-    --sidebar-background: 223 47% 11%;
+    --ring: 213 94% 68%; /* Azul claro para anel de foco */
+    
+    /* Variáveis do Sidebar para modo escuro (já estavam ok) */
+    --sidebar-background: 223 47% 11%; 
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 213 94% 68%;
+    --sidebar-primary: 213 94% 68%; 
     --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 213 94% 68%;
+    --sidebar-accent: 213 94% 68%; 
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 33% 18%;
-    --sidebar-ring: 212 27% 84%;
+    --sidebar-ring: 213 27% 84%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border; /* Garante que a cor da borda use a variável CSS */
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 @layer components {
   .hero-gradient {
-    @apply bg-gradient-to-r from-blue-900 to-blue-700 dark:from-blue-950 dark:to-blue-900;
+    /* Gradiente para modo claro */
+    @apply bg-gradient-to-r from-blue-500 to-blue-700;
+    /* Gradiente para modo escuro */
+    @apply dark:from-sky-500 dark:to-blue-600;
   }
   
   .section-padding {
-    @apply py-16 px-4 md:py-24 md:px-6 lg:px-8;
+    @apply py-12 px-4 md:py-20 md:px-6 lg:px-8;
   }
   
   .heading-xl {
-    @apply text-4xl font-bold md:text-5xl lg:text-6xl leading-tight;
+    @apply text-4xl font-extrabold md:text-5xl lg:text-6xl leading-tight;
   }
   
   .heading-lg {
@@ -119,3 +124,4 @@
     @apply text-2xl font-bold md:text-3xl leading-tight;
   }
 }
+
