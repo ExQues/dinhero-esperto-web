@@ -10,6 +10,11 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import AuthCallback from "./pages/AuthCallback";
 import TransactionsPage from "./pages/TransactionsPage";
+import PlanningPage from "./pages/PlanningPage";
+import BudgetsPage from "./pages/BudgetsPage";
+import ReportsPage from "./pages/ReportsPage";
+import SharedAccountsPage from "./pages/SharedAccountsPage";
+import SettingsPage from "./pages/SettingsPage";
 import { ThemeToggleButton } from "./components/ThemeToggleButton";
 import PlaceholderPage from "./components/PlaceholderPage"; // Importar a página placeholder
 import Sidebar from "./components/Sidebar"; // Importar Sidebar para o layout do painel
@@ -60,12 +65,12 @@ const App = () => {
                   <Route path="/dashboard" element={<DashboardLayout />}>
                     <Route index element={<Dashboard />} /> {/* Página principal do dashboard */}
                     <Route path="transactions" element={<TransactionsPage />} />
-                    <Route path="budgets" element={<PlaceholderPage title="Orçamentos" />} />
-                    <Route path="reports" element={<PlaceholderPage title="Relatórios" />} />
-                    <Route path="planning" element={<PlaceholderPage title="Planejamento" />} />
-                    <Route path="shared" element={<PlaceholderPage title="Contas Compartilhadas" />} />
+                    <Route path="budgets" element={<BudgetsPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="planning" element={<PlanningPage />} />
+                    <Route path="shared" element={<SharedAccountsPage />} />
                     <Route path="inventory" element={<PlaceholderPage title="Estoque" />} /> {/* Adicionar verificação de premium aqui se necessário */}
-                    <Route path="settings" element={<PlaceholderPage title="Configurações" />} />
+                    <Route path="settings" element={<SettingsPage />} />
                   </Route>
 
                   <Route path="*" element={<NotFound />} />
