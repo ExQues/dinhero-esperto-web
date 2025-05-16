@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Sidebar from './Sidebar'; // Ajuste o caminho se necessário
+
 import { useAuth } from '@/context/AuthContext';
 import { BarChart, PieChart, DollarSign, Calendar } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +44,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300">
-      <Sidebar collapsed={sidebarCollapsed} toggleSidebar={toggleSidebar} />
+
       
       <main 
         className={cn(
