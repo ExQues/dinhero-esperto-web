@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -32,38 +31,38 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     title: 'Transações',
-    path: '/transactions',
+    path: '/dashboard/transactions',
     icon: <DollarSign size={20} />,
   },
   {
     title: 'Orçamentos',
-    path: '/budgets',
+    path: '/dashboard/budgets',
     icon: <PieChart size={20} />,
   },
   {
     title: 'Relatórios',
-    path: '/reports',
+    path: '/dashboard/reports',
     icon: <BarChart size={20} />,
   },
   {
     title: 'Planejamento',
-    path: '/planning',
+    path: '/dashboard/planning',
     icon: <Calendar size={20} />,
   },
   {
     title: 'Contas Compartilhadas',
-    path: '/shared',
+    path: '/dashboard/shared',
     icon: <Users size={20} />,
   },
   {
     title: 'Estoque',
-    path: '/inventory',
+    path: '/dashboard/inventory',
     icon: <Archive size={20} />,
     isPremium: true,
   },
   {
     title: 'Configurações',
-    path: '/settings',
+    path: '/dashboard/settings',
     icon: <Settings size={20} />,
   },
 ];
