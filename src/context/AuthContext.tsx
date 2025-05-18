@@ -1,211 +1,156 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '@/client';
+import { authService, User } from '@/services/authService';
 
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  isPremium: boolean;
-};
-
-type AuthContextType = {
-  user: User | null;
+interface AuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
   isPremium: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (name: string, email: string, password: string, resend?: boolean) => Promise<{success: boolean, message?: string}>;
-  verifyCode: (email: string, code: string) => Promise<{success: boolean, message?: string}>;
-  upgradeToPremium: () => Promise<void>;
-};
+  updateProfile: (data: { name?: string; avatar_url?: string }) => Promise<void>;
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  user: null,
+  isPremium: false,
+  isLoading: true,
+  login: async () => {},
+  register: async () => {},
+  logout: async () => {},
+  updateProfile: async () => {},
+});
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const useAuth = () => useContext(AuthContext);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+  useEffect(() => {
+    // Verificar autenticação atual
+    const checkAuth = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        
+        if (currentUser) {
+          setUser(currentUser);
+          setIsAuthenticated(true);
+          
+          // Verificar se o usuário é premium (implementar lógica real)
+          // Por enquanto, vamos considerar todos como não premium
+          setIsPremium(false);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+          setIsPremium(false);
+        }
+      } catch (error) {
+        console.error('Erro ao verificar autenticação:', error);
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsPremium(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Configurar listener para mudanças de autenticação
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (session?.user) {
+          const currentUser = await authService.getCurrentUser();
+          setUser(currentUser);
+          setIsAuthenticated(true);
+          
+          // Verificar status premium
+          setIsPremium(false); // Implementar lógica real
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsAuthenticated(false);
+        setIsPremium(false);
+      }
     });
 
-    if (error) throw error;
+    checkAuth();
 
-    if (data.user) {
-      setUser({
-        id: data.user.id,
-        name: data.user.user_metadata.name || email.split('@')[0],
-        email: data.user.email!,
-        isPremium: false,
-      });
+    // Cleanup
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      await authService.login(email, password);
+      // A atualização do estado será feita pelo listener onAuthStateChange
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      throw error;
     }
   };
 
-  const signup = async (name: string, email: string, password: string, resend: boolean = false): Promise<{success: boolean, message?: string}> => {
+  const register = async (email: string, password: string, name?: string) => {
     try {
-      // If it's a resend, we use a different approach
-      if (resend) {
-        // Generate a random 6-digit code
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Store the code temporarily (this would ideally be in a database)
-        localStorage.setItem(`verificationCode_${email}`, verificationCode);
-        
-        // Use resetPasswordForEmail as a way to send an email with the code
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback`
-          // Note: We can no longer send additional data here due to type constraints
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: 'Código reenviado',
-          description: 'Um novo código de verificação foi enviado para seu email.',
-        });
-        
-        return { success: true };
-      }
-      
-      // Generate a random 6-digit code for new signup
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      
-      // Sign up the user with the verification code stored in metadata
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { 
-            name,
-            verificationCode
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        console.error("Signup error:", error);
-        return { success: false, message: error.message };
-      }
-
-      if (data.user) {
-        toast({
-          title: 'Verifique seu email',
-          description: 'Um código de verificação foi enviado para seu email.',
-        });
-        return { success: true };
-      }
-      
-      return { success: false, message: 'Ocorreu um erro inesperado.' };
-    } catch (error: any) {
-      console.error("Error in signup:", error);
-      return { success: false, message: error.message };
-    }
-  };
-  
-  const verifyCode = async (email: string, code: string): Promise<{success: boolean, message?: string}> => {
-    try {
-      // Since getUserByEmail doesn't exist, we'll need another approach
-      // We could use getUser() to get the current user, or query a database table where we store verification codes
-      
-      // For now, let's use a workaround with local storage
-      // In production, this should be replaced with a server-side verification
-      const storedCode = localStorage.getItem(`verificationCode_${email}`);
-      
-      if (!storedCode) {
-        return { success: false, message: 'Código de verificação expirado ou não encontrado.' };
-      }
-      
-      if (code !== storedCode) {
-        return { success: false, message: 'Código de verificação inválido.' };
-      }
-      
-      // If code matches, clear it from storage
-      localStorage.removeItem(`verificationCode_${email}`);
-      
-      // Now we can sign in the user or mark their email as verified
-      // For a complete solution, you should implement a proper verification flow
-      
-      return { success: true };
-    } catch (error: any) {
-      console.error("Error in verification:", error);
-      return { success: false, message: error.message };
+      await authService.register(email, password, name);
+      // A atualização do estado será feita pelo listener onAuthStateChange
+    } catch (error) {
+      console.error('Erro ao registrar:', error);
+      throw error;
     }
   };
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
-  };
-  
-  const upgradeToPremium = async () => {
-    if (user) {
-      setUser({ ...user, isPremium: true });
+    try {
+      await authService.logout();
+      // A atualização do estado será feita pelo listener onAuthStateChange
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      throw error;
     }
   };
 
-  // Listen for authentication state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth event:", event);
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            name: session.user.user_metadata.name || session.user.email!.split('@')[0],
-            email: session.user.email!,
-            isPremium: false,
-          });
-        } else {
-          setUser(null);
-        }
-      }
-    );
+  const updateProfile = async (data: { name?: string; avatar_url?: string }) => {
+    if (!user) throw new Error('Usuário não autenticado');
+    
+    try {
+      await authService.updateProfile(user.id, data);
+      
+      // Atualizar estado local
+      setUser(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          name: data.name || prev.name,
+          avatar_url: data.avatar_url || prev.avatar_url
+        };
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar perfil:', error);
+      throw error;
+    }
+  };
 
-    // Check current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("Current session:", session);
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          name: session.user.user_metadata.name || session.user.email!.split('@')[0],
-          email: session.user.email!,
-          isPremium: false,
-        });
-      }
-    });
+  const value = {
+    isAuthenticated,
+    user,
+    isPremium,
+    isLoading,
+    login,
+    register,
+    logout,
+    updateProfile,
+  };
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isPremium: user?.isPremium || false,
-        login,
-        logout,
-        signup,
-        verifyCode,
-        upgradeToPremium,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
