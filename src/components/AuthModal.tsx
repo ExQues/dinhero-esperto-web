@@ -1,398 +1,198 @@
-
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/context/AuthContext';
-import { validatePassword } from '@/utils/passwordValidation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Check, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
-type AuthModalProps = {
+interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode: 'login' | 'signup';
-};
+}
 
-const AuthModal = ({ isOpen, onClose, initialMode = 'login' }: AuthModalProps) => {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [showVerification, setShowVerification] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [verificationState, setVerificationState] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    // When the modal is opened or the initialMode prop changes,
-    // update the internal mode and reset form states.
-    if (isOpen) { // Only act if the modal is intended to be visible
-      setMode(initialMode);
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
-      setName('');
-      setPasswordErrors([]);
-      setErrorMessage('');
-      setShowVerification(false); // Reset verification flow
-      setVerificationCode('');
-      setEmailSent(false);
-      setVerificationState('idle');
-    }
-  }, [isOpen, initialMode]); // Dependencies: isOpen and initialMode
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+  const { login, register, loginError } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>('login');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
-  const { login, signup, verifyCode } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  const validateForm = () => {
-    if (mode === 'signup') {
-      const { isValid, errors } = validatePassword(password);
-      setPasswordErrors(errors);
-      
-      if (!isValid) return false;
-      
-      if (password !== confirmPassword) {
-        setPasswordErrors(['As senhas não conferem']);
-        return false;
-      }
-    }
-    return true;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
+  
+  // Register form state
+  const [registerEmail, setRegisterEmail] = useState<string>('');
+  const [registerPassword, setRegisterPassword] = useState<string>('');
+  const [registerName, setRegisterName] = useState<string>('');
+  
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) return;
-    
+    setError(null);
     setIsLoading(true);
-    setErrorMessage('');
     
     try {
-      if (mode === 'login') {
-        await login(email, password);
-        toast({
-          title: 'Login realizado com sucesso!',
-          description: 'Bem-vindo de volta ao DinheroEsperto.',
-        });
-        onClose();
-        navigate('/dashboard');
-      } else {
-        const { success, message } = await signup(name, email, password);
-        if (success) {
-          setShowVerification(true);
-          setEmailSent(true);
-          toast({
-            title: 'Código de verificação enviado!',
-            description: 'Por favor, verifique seu email e insira o código de verificação.',
-          });
-        } else {
-          setErrorMessage(message || 'Ocorreu um erro ao processar sua solicitação.');
-          throw new Error(message);
-        }
-      }
-    } catch (error) {
-      console.error('Auth error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: errorMessage || 'Ocorreu um erro ao processar sua solicitação.',
-      });
+      await login(loginEmail, loginPassword);
+      onClose();
+    } catch (err: any) {
+      console.error('Erro no login:', err);
+      // O erro já será tratado pelo AuthContext e armazenado em loginError
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleVerifyCode = async (e: React.FormEvent) => {
+  
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (verificationCode.length !== 6) {
-      setErrorMessage('O código deve conter 6 dígitos.');
-      return;
-    }
-
-    setVerificationState('verifying');
-    setErrorMessage('');
-
-    try {
-      const { success, message } = await verifyCode(email, verificationCode);
-      if (success) {
-        setVerificationState('success');
-        toast({
-          title: 'Email verificado com sucesso!',
-          description: 'Sua conta foi ativada. Você pode fazer login agora.',
-        });
-        setTimeout(() => {
-          setMode('login');
-          setShowVerification(false);
-          setVerificationState('idle');
-          setVerificationCode('');
-        }, 1500);
-      } else {
-        setVerificationState('error');
-        setErrorMessage(message || 'Código de verificação inválido.');
-        toast({
-          variant: 'destructive',
-          title: 'Erro de verificação',
-          description: message || 'Código de verificação inválido.',
-        });
-      }
-    } catch (error) {
-      setVerificationState('error');
-      setErrorMessage('Ocorreu um erro ao verificar o código.');
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Ocorreu um erro ao verificar o código.',
-      });
-    }
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    if (mode === 'signup') {
-      const { errors } = validatePassword(newPassword);
-      setPasswordErrors(errors);
-    }
-  };
-
-  const handleResendCode = async () => {
+    setError(null);
     setIsLoading(true);
+    
     try {
-      const { success, message } = await signup(name, email, password, true);
-      if (success) {
-        setEmailSent(true);
-        toast({
-          title: 'Código reenviado!',
-          description: 'Um novo código de verificação foi enviado para o seu email.',
-        });
-      } else {
-        setErrorMessage(message || 'Erro ao reenviar o código de verificação.');
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro',
-        description: 'Ocorreu um erro ao reenviar o código de verificação.',
-      });
+      await register(registerEmail, registerPassword, registerName);
+      setActiveTab('login');
+      setError('Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao criar conta. Tente novamente.');
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {showVerification ? 'Verificar Email' : mode === 'login' ? 'Entrar na sua conta' : 'Criar uma nova conta'}
+            {activeTab === 'login' ? 'Entrar na sua conta' : 'Criar uma conta'}
           </DialogTitle>
           <DialogDescription>
-            {showVerification 
-              ? 'Digite o código de verificação de 6 dígitos enviado para seu email.' 
-              : mode === 'login' 
-                ? 'Entre com seu email e senha para acessar sua conta.'
-                : 'Preencha os campos abaixo para criar sua conta gratuitamente.'}
+            {activeTab === 'login' 
+              ? 'Entre com seu email e senha para acessar sua conta.' 
+              : 'Preencha os dados abaixo para criar sua conta.'}
           </DialogDescription>
         </DialogHeader>
         
-        {showVerification ? (
-          <form onSubmit={handleVerifyCode} className="space-y-4 pt-4">
-            <div className="space-y-4">
-              <div className="flex flex-col items-center justify-center space-y-2">
-                <p className="text-sm text-center text-gray-600">
-                  Enviamos um código de verificação para
-                  <br />
-                  <span className="font-medium">{email}</span>
-                </p>
-                
-                <div className="flex justify-center my-4">
-                  <InputOTP 
-                    value={verificationCode} 
-                    onChange={setVerificationCode} 
-                    maxLength={6}
-                  >
-                    <InputOTPGroup>
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
-                </div>
-                
-                {errorMessage && (
-                  <Alert variant="destructive" className="mt-2">
-                    <AlertDescription>{errorMessage}</AlertDescription>
-                  </Alert>
-                )}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="register">Cadastro</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="login">
+            <form onSubmit={handleLogin} className="space-y-4 py-4">
+              {(loginError || error) && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {loginError || error}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required
+                />
               </div>
-            </div>
-            
-            <div className="pt-2 space-y-4">
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={verificationCode.length !== 6 || verificationState === 'verifying' || verificationState === 'success'}
-              >
-                {verificationState === 'verifying' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verificando
-                  </>
-                ) : verificationState === 'success' ? (
-                  <>
-                    <Check className="mr-2 h-4 w-4" /> Verificado
-                  </>
-                ) : (
-                  'Verificar Código'
-                )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Senha</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Processando...' : 'Entrar'}
               </Button>
               
               <div className="text-center text-sm">
-                <p className="text-gray-600">
-                  Não recebeu o código?{' '}
-                  <button
-                    type="button"
-                    className="text-primary hover:underline focus:outline-none"
-                    onClick={handleResendCode}
-                    disabled={isLoading}
-                  >
-                    Reenviar
-                  </button>
-                </p>
-              </div>
-              
-              <div className="text-center text-sm">
+                Não tem uma conta?{' '}
                 <button
                   type="button"
-                  className="text-primary hover:underline focus:outline-none"
-                  onClick={() => {
-                    setMode('login');
-                    setShowVerification(false);
-                  }}
+                  className="text-primary underline"
+                  onClick={() => setActiveTab('register')}
                 >
-                  Voltar para login
+                  Criar uma conta
                 </button>
               </div>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-            {mode === 'signup' && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome</Label>
-                <Input 
-                  id="name" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Seu nome completo" 
-                  required 
-                />
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu.email@exemplo.com" 
-                required 
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                value={password}
-                onChange={handlePasswordChange}
-                placeholder="******" 
-                required 
-              />
-            </div>
-
-            {mode === 'signup' && (
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                <Input 
-                  id="confirmPassword" 
-                  type="password" 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="******" 
-                  required 
-                />
-              </div>
-            )}
-            
-            {passwordErrors.length > 0 && (
-              <Alert variant="destructive" className="mt-2">
-                <AlertDescription>
-                  <ul className="list-disc pl-4">
-                    {passwordErrors.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {errorMessage && (
-              <Alert variant="destructive" className="mt-2">
-                <AlertDescription>{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-            
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processando...
-                </>
-              ) : mode === 'login' ? 'Entrar' : 'Criar Conta'}
-            </Button>
-            
-            <div className="text-center text-sm">
-              {mode === 'login' ? (
-                <p>
-                  Não tem uma conta?{' '}
-                  <button
-                    type="button"
-                    className="text-primary hover:underline focus:outline-none"
-                    onClick={() => setMode('signup')}
-                  >
-                    Criar uma conta
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Já tem uma conta?{' '}
-                  <button
-                    type="button"
-                    className="text-primary hover:underline focus:outline-none"
-                    onClick={() => setMode('login')}
-                  >
-                    Entrar
-                  </button>
-                </p>
+            </form>
+          </TabsContent>
+          
+          <TabsContent value="register">
+            <form onSubmit={handleRegister} className="space-y-4 py-4">
+              {error && (
+                <Alert variant={error.includes('sucesso') ? 'default' : 'destructive'}>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {error}
+                  </AlertDescription>
+                </Alert>
               )}
-            </div>
-          </form>
-        )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="register-name">Nome</Label>
+                <Input
+                  id="register-name"
+                  type="text"
+                  placeholder="Seu nome"
+                  value={registerName}
+                  onChange={(e) => setRegisterName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="register-email">Email</Label>
+                <Input
+                  id="register-email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={registerEmail}
+                  onChange={(e) => setRegisterEmail(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="register-password">Senha</Label>
+                <Input
+                  id="register-password"
+                  type="password"
+                  value={registerPassword}
+                  onChange={(e) => setRegisterPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Processando...' : 'Criar conta'}
+              </Button>
+              
+              <div className="text-center text-sm">
+                Já tem uma conta?{' '}
+                <button
+                  type="button"
+                  className="text-primary underline"
+                  onClick={() => setActiveTab('login')}
+                >
+                  Fazer login
+                </button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

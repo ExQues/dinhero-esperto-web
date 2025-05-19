@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   isPremium: boolean;
   isLoading: boolean;
+  loginError: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isPremium: false,
   isLoading: true,
+  loginError: null,
   login: async () => {},
   register: async () => {},
   logout: async () => {},
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   useEffect(() => {
     // Verificar autenticação atual
@@ -68,12 +71,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) {
-          const currentUser = await authService.getCurrentUser();
-          setUser(currentUser);
-          setIsAuthenticated(true);
-          
-          // Verificar status premium
-          setIsPremium(false); // Implementar lógica real
+          try {
+            const currentUser = await authService.getCurrentUser();
+            setUser(currentUser);
+            setIsAuthenticated(true);
+            
+            // Verificar status premium
+            setIsPremium(false); // Implementar lógica real
+          } catch (error) {
+            console.error('Erro ao obter usuário após login:', error);
+            setUser(null);
+            setIsAuthenticated(false);
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -91,11 +100,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = async (email: string, password: string) => {
+    setLoginError(null);
     try {
+      // Verificar se as variáveis de ambiente estão definidas
+      if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        throw new Error('Configuração do Supabase incompleta. Entre em contato com o administrador.');
+      }
+      
       await authService.login(email, password);
       // A atualização do estado será feita pelo listener onAuthStateChange
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer login:', error);
+      
+      // Tratamento de erros específicos
+      if (error.message?.includes('Invalid login credentials')) {
+        setLoginError('Email ou senha incorretos');
+      } else if (error.message?.includes('Email not confirmed')) {
+        setLoginError('Email não confirmado. Verifique sua caixa de entrada');
+      } else if (error.message?.includes('network')) {
+        setLoginError('Erro de conexão. Verifique sua internet');
+      } else {
+        setLoginError(error.message || 'Erro ao fazer login. Tente novamente');
+      }
+      
       throw error;
     }
   };
@@ -104,9 +131,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await authService.register(email, password, name);
       // A atualização do estado será feita pelo listener onAuthStateChange
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao registrar:', error);
-      throw error;
+      
+      // Tratamento de erros específicos
+      if (error.message?.includes('already registered')) {
+        throw new Error('Este email já está registrado');
+      } else if (error.message?.includes('network')) {
+        throw new Error('Erro de conexão. Verifique sua internet');
+      } else {
+        throw error;
+      }
     }
   };
 
@@ -146,6 +181,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     user,
     isPremium,
     isLoading,
+    loginError,
     login,
     register,
     logout,
